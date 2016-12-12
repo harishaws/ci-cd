@@ -10,7 +10,7 @@ ADD APIGateway_Install.run /APIGateway_Install.run
 
 RUN chmod u+x APIGateway_Install.run
 
-ADD lic.lic /
+#ADD lic.lic /
 
 ADD scripts /scripts
 
