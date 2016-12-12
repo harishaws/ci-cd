@@ -1,42 +1,31 @@
-FROM harishaws/gwlinux
+#
+# Redis Dockerfile
+#
+# https://github.com/dockerfile/redis
+#
 
-USER root
+# Pull base image.
+FROM dockerfile/ubuntu
 
-MAINTAINER team.moloko@axway.com
+# Install Redis.
+RUN \
+  cd /tmp && \
+  wget http://download.redis.io/redis-stable.tar.gz && \
+  tar xvzf redis-stable.tar.gz && \
+  cd redis-stable && \
+  make && \
+  make install && \
+  cp -f src/redis-sentinel /usr/local/bin && \
+  mkdir -p /etc/redis && \
+  cp -f *.conf /etc/redis && \
+  rm -rf /tmp/redis-stable* && \
+  sed -i 's/^\(bind .*\)$/# \1/' /etc/redis/redis.conf && \
+  sed -i 's/^\(daemonize .*\)$/# \1/' /etc/redis/redis.conf && \
+  sed -i 's/^\(dir .*\)$/# \1\ndir \/data/' /etc/redis/redis.conf && \
+  sed -i 's/^\(logfile .*\)$/# \1/' /etc/redis/redis.conf
 
-ENV TZ Europe/Dublin
+# Define mountable directories.
+VOLUME ["/data"]
 
-ADD APIGateway_Install.run /APIGateway_Install.run
-
-RUN chmod u+x APIGateway_Install.run
-
-#ADD lic.lic /
-
-ADD scripts /scripts
-
-RUN cd / && \
-./APIGateway_Install.run \
---mode unattended \
---unattendedmodeui none \
---setup_type complete \
---prefix /opt/Axway/ \
---licenseFilePath /lic.lic \
---apimgmtLicenseFilePath /lic.lic \
---analyticsLicenseFilePath /lic.lic \
---firstInNewDomain 0 \
---configureGatewayQuestion 0 \
---nmStartupQuestion 0 \
---enable-components nodemanager,apimgmt,cassandra \
---disable-components analytics,apitester,policystudio,configurationstudio,qstart \
---startCassandra 0 \
---cassandraInstalldir /opt \
---cassandraJDK /opt/Axway/apigateway/platform/jre
-
-RUN rm APIGateway_Install.run
-
-EXPOSE 8065 8075 8080 8085 8089 8090 4444
-
-ENV GWDIR=/opt/Axway/apigateway
-ENV JAVA_HOME=/opt/Axway/apigateway/Linux.x86_64/jre/
-
-RUN  ln -s /opt/Axway/apigateway/Linux.x86_64/jre/bin/java /usr/bin/java
+# Define working directory.
+WORKDIR /data
