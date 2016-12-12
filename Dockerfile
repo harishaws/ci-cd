@@ -1,4 +1,4 @@
-#
+#####
 # Redis Dockerfile
 #
 # https://github.com/dockerfile/redis
